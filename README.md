@@ -32,5 +32,5 @@ I highly encourage you to use this addon in your projects. However, I would appr
 
 The addon only works with textures from these two sites.
 
-*http://spaceengine.org/download/official-addons/solar-system-hd/
+* http://spaceengine.org/download/official-addons/solar-system-hd/
 * http://spaceengine.org/download/official-addons/solar-system-uhd/
