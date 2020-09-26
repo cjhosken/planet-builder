@@ -1,3 +1,6 @@
+import bpy, __init__, plfunctions, texfunctions
+from bpy.types import Operator
+
 class MakePlanet(Operator):
     bl_label = 'Make Planet'
     bl_idname = 'mk.planet'
@@ -6,17 +9,12 @@ class MakePlanet(Operator):
     
     
     def execute(self, context):
-        #if bpy.context.scene.file_path == "" or RuntimeError:
-        #    ShowMessageBox("No File Path Found.", "ERROR", 'ERROR')
-        #    return{'CANCELLED'}
-        #else:
-        #    clear()
-        #    appendbase()
-        #    assigntex()
-        #    makeround()
-        #    return{'FINISHED'}
-        clear()
-        appendbase()
-        assigntex()
-        makeround()
-        return{'FINISHED'}
+        if bpy.context.scene.file_path == "" or RuntimeError:
+            __init__.ShowMessageBox("No File Path Found.", "Whoops!", 'ERROR')
+            return{'CANCELLED'}
+        else:
+            texfunctions.clear()
+            plfunctions.appendbase()
+            plfunctions.assigntex()
+            plfunctions.makeround()
+            return{'FINISHED'}

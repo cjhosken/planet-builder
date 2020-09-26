@@ -1,3 +1,5 @@
+import bpy, math, os, __init__
+
 def center_cursor():
     bpy.context.scene.cursor.location[0] = 0
     bpy.context.scene.cursor.location[1] = 0

@@ -1,6 +1,7 @@
+import bpy, __init__
+
 def appendbase():
-    addon_folder = bpy.utils.user_resource('SCRIPTS', "addons")
-    path = f"{addon_folder}/Planet-Builder/base.blend"
+    path = f"{__init__.addons_directory}/base.blend"
     obj_name = "Planet"
     
     link = False
@@ -19,7 +20,10 @@ def gettex(name, file):
     nodes = mat.node_tree.nodes
     node_name = nodes[name]
     img = bpy.data.textures.new(f"{name}", "IMAGE")
-    img = bpy.data.images.load(f'{file}{name}.png')
+    try:
+        img = bpy.data.images.load(f'{file}{name}.png')
+    except:
+        __init__.ShowMessageBox(message="", title="Whoops!", icon="ERROR")
     node_name.image = img
     return{'FINISHED'}
 

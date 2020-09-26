@@ -15,46 +15,48 @@ bl_info = {
     "name" : "Planet Builder",
     "author" : "Christopher Hosken",
     "description" : "",
-    "blender" : (2, 80, 3),
-    "version" : (0, 0, 1),
+    "blender" : (2, 90, 1),
+    "version" : (1, 0, 0),
     "location" : "",
     "warning" : "Planet Builder only works with Solar System HD and Solar System Ultra textures.",
     "category" : "General"
 }
 
-import bpy, os, math, pathlib, shutil
-from bpy_extras.io_utils import ImportHelper
-from bpy.types import Operator, Panel, PropertyGroup
-from bpy.props import StringProperty, BoolProperty, PointerProperty, EnumProperty
-
-homedir = os.path.expanduser("~/")
+from importlib import reload
+import bpy, os, sys
+from bpy.props import PointerProperty, StringProperty
 
 addon_folder = bpy.utils.user_resource('SCRIPTS', "addons")
 
-#addon_folder = '/home/cjhosken/Documents/Visual Studio Code/Blender_Addons'
+try:
+    addons_directory = os.path.dirname(__file__)
+except:
+    pass
+try:
+    addons_directory = os.path.dirname(bpy.context.space_data.text.filepath)
+except:
+    pass
 
-with open(f"{addon_folder}/Planet-Builder/tex-functions.py") as txfun:
-    txfun_file = txfun.read()
+print(addons_directory)
 
-with open(f"{addon_folder}/Planet-Builder/maketextures.py") as texmk:
-    texmk_file = texmk.read()
+sys.path.append(addons_directory)
 
-with open(f"{addon_folder}/Planet-Builder/pl-functions.py") as plfun:
-    plfun_file = plfun.read()
-
-with open(f"{addon_folder}/Planet-Builder/makeplanet.py") as plmk:
-    plmk_file = plmk.read()
-
-with open(f"{addon_folder}/Planet-Builder/panel.py") as panel:
-    panel_file = panel.read()
-
-with open(f"{addon_folder}/Planet-Builder/register.py") as reg:
-    reg_file = reg.read()
-
-with open(f"{addon_folder}/Planet-Builder/unregister.py") as unreg:
-    unreg_file = unreg.read()
-
-exec(txfun_file + "\n" + texmk_file + "\n" + plfun_file + "\n" + plmk_file + "\n" + panel_file + "\n" + reg_file + "\n" + unreg_file)
+sys.path.append(addons_directory)
+if 'pl-functions' in sys.modules:
+    reload(sys.modules['plfunctions'])
+if 'makeplanet' in sys.modules:
+    reload(sys.modules['makeplanet'])
+if 'tex-functions' in sys.modules:
+    reload(sys.modules['texfunctions'])
+if 'maketextures' in sys.modules:
+    reload(sys.modules['maketextures'])
+if 'panel' in sys.modules:
+    reload(sys.modules['panel'])
+import plfunctions
+import makeplanet
+import texfunctions
+import maketextures
+import panel
 
 def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
 
@@ -63,8 +65,33 @@ def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
 
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
+def register():
+    bpy.utils.register_class(maketextures.MakeTextures)
+    bpy.utils.register_class(makeplanet.MakePlanet)
+    bpy.utils.register_class(panel._PT_PlanetbuilderPanel)
+    bpy.utils.register_class(panel.Clearall)
+    bpy.utils.register_class(panel.TextureRes)
+    bpy.types.WindowManager.texture_res = PointerProperty(type=panel.TextureRes)
+    bpy.types.Scene.file_path = StringProperty \
+        (
+        name = '',
+        description = 'Select Folder',
+        default = '',
+        subtype = 'FILE_PATH'
+        )
 
+def unregister():
+    bpy.utils.unregister_class(maketextures.MakeTextures)
+    bpy.utils.unregister_class(makeplanet.MakePlanet)
+    bpy.utils.unregister_class(panel._PT_PlanetbuilderPanel)
+    bpy.utils.unregister_class(panel.Clearall)
+    bpy.utils.unregister_class(panel.TextureRes)
+    del bpy.types.WindowManager.texture_res
+    del bpy.types.Scene.file_path
 
-# Addon Path: bpy.utils.user_resource('SCRIPTS, "addons")
-
-# Testing Path: /home/cjhosken/Documents/Visual\Studio\Code/Blender_Addons
+if __name__ == '__main__':
+    try:
+        unregister()
+    except:
+        pass
+    register()

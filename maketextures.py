@@ -1,3 +1,6 @@
+import bpy, os, __init__, texfunctions
+from bpy.types import Operator
+
 class MakeTextures(Operator):
     bl_label = 'Make Textures'
     bl_idname = 'mk.textures'
@@ -6,7 +9,7 @@ class MakeTextures(Operator):
     
     def execute(self, context):
         if bpy.context.scene.file_path == "" or RuntimeError:
-            ShowMessageBox("No File Path Found.", "ERROR", 'ERROR')
+            __init__.ShowMessageBox("No File Path Found.", "Whoops!", 'ERROR')
             return{'CANCELLED'}
         else:
             dir = context.scene.file_path
@@ -20,12 +23,12 @@ class MakeTextures(Operator):
                     if dir_name != 'output':
                         files = []
                         for r, d, f in os.walk(f'{dir}{dir_name}/'):
-                            clear()
+                            texfunctions.clear()
                             for file_name in f:
-                                center_cursor()
-                                buildgrid(dir_name, file_name)
+                                texfunctions.center_cursor()
+                                texfunctions.buildgrid(dir_name, file_name)
                                 
-                            addcam(dir, dir_name)
-                            render(dir_name)
-            clear()
+                            texfunctions.addcam(dir, dir_name)
+                            texfunctions.render(dir_name)
+            texfunctions.clear()
             return{'FINISHED'}

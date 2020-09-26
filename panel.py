@@ -1,3 +1,8 @@
+import bpy, __init__, makeplanet, maketextures, texfunctions
+from bpy.types import Panel, Operator, PropertyGroup
+from bpy.props import EnumProperty
+
+
 class _PT_PlanetbuilderPanel(Panel):
     bl_label = "Planet Builder"
     bl_idname = "PANEL_PT_planetbuilder"
@@ -42,5 +47,5 @@ class Clearall(Operator):
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self, context):
-        clear()
+        texfunctions.clear()
         return{'FINISHED'}
