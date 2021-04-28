@@ -1,97 +1,81 @@
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTIBILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
+import os, math, re
+import PIL.Image as Image
+import cv2, numpy as np
+import projections.c2e as c2e
 
-bl_info = {
-    "name" : "Planet Builder",
-    "author" : "Christopher Hosken",
-    "description" : "",
-    "blender" : (2, 90, 1),
-    "version" : (1, 0, 0),
-    "location" : "",
-    "warning" : "Planet Builder only works with Solar System HD and Solar System Ultra textures.",
-    "category" : "General"
-}
+class ImageBuilder():
+    def __init__(self, p):
+        self._PATH = p
+        self._RES = self.getRes()
+        self._QUADS = []
+        self.run()
 
-from importlib import reload
-import bpy, os, sys
-from bpy.props import PointerProperty, StringProperty
+    def run(self):
+        pattern = "(.*)_(.*)_(.*)"
+        pct = 0
 
-addon_folder = bpy.utils.user_resource('SCRIPTS', "addons")
+        for folder in os.listdir(self._PATH):
+            if os.path.isdir(os.path.join(self._PATH, folder)):
+                plate = Image.new('RGB', (self._RES * 258, self._RES * 258))
+                for file in os.listdir(os.path.join(self._PATH, folder)):
+                    filename = file[:-4]
+                    if int(re.search(pattern, filename).group(1)) == 4:
+                        tex = cv2.imread(os.path.join(self._PATH, folder, file))
+                        x = int(re.search(pattern, filename).group(2))
+                        y = int(re.search(pattern, filename).group(3))
+                        plate.paste(Image.fromarray(tex), (258 * y, 258 * x))
 
-try:
-    addons_directory = os.path.dirname(__file__)
-except:
-    pass
-try:
-    addons_directory = os.path.dirname(bpy.context.space_data.text.filepath)
-except:
-    pass
+                plate.save(f"{self._PATH}/{folder}.png", "PNG")
+                self._QUADS.append(f"{folder}.png")
+                pct += 1
+                print(f"Building Quadrants: {pct} / 6")
+        
+        cubemap = Image.new('RGB', (self._RES * 258 * 4, self._RES * 258 * 3))
+        pct = 0
+        for folder in os.listdir(self._PATH):
+            if folder in self._QUADS:
+                if folder == "pos_x.png":
+                    x = 2
+                    y = 1
+                elif folder == "neg_x.png":
+                    x = 0
+                    y = 1
+                elif folder == "pos_y.png":
+                    x = 1
+                    y = 0
+                elif folder == "neg_y.png":
+                    x = 1
+                    y = 2
+                elif folder == "pos_z.png":
+                    x = 1
+                    y = 1
+                elif folder == "neg_z.png":
+                    x = 3
+                    y = 1
+                
+                quad = cv2.imread(os.path.join(self._PATH, folder))
+                cubemap.paste(Image.fromarray(quad), (258 * self._RES * x, 258 * self._RES * y))
+                pct += 1
+                print(f"Building Cubemap: {pct} / 6")
+        
+        cubemap.save("cubemap.png", "PNG")
+        data =  np.array(cubemap)
+        print("Converting to Equirectangular Projection...")
+        equirect = c2e.c2e(data, self._RES * 258 * 2, self._RES * 258 *4)
+        equirect = Image.fromarray(np.uint8(equirect)).convert('RGB')
+        equirect.save("equirect.png", "PNG")
+        equirect.show()
 
-print(addons_directory)
+    def getRes(self):
+        count = 0
+        for folder in os.listdir(self._PATH):
+            if os.path.isdir(os.path.join(self._PATH, folder)):
+                for file in os.listdir(os.path.join(self._PATH, folder)):
+                    if file[0] == "4":
+                        count += 1
+                break
 
-sys.path.append(addons_directory)
+        return int(math.sqrt(count))
 
-sys.path.append(addons_directory)
-if 'pl-functions' in sys.modules:
-    reload(sys.modules['plfunctions'])
-if 'makeplanet' in sys.modules:
-    reload(sys.modules['makeplanet'])
-if 'tex-functions' in sys.modules:
-    reload(sys.modules['texfunctions'])
-if 'maketextures' in sys.modules:
-    reload(sys.modules['maketextures'])
-if 'panel' in sys.modules:
-    reload(sys.modules['panel'])
-import plfunctions
-import makeplanet
-import texfunctions
-import maketextures
-import panel
-
-def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
-
-    def draw(self, context):
-        self.layout.label(text=message)
-
-    bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
-
-def register():
-    bpy.utils.register_class(maketextures.MakeTextures)
-    bpy.utils.register_class(makeplanet.MakePlanet)
-    bpy.utils.register_class(panel._PT_PlanetbuilderPanel)
-    bpy.utils.register_class(panel.Clearall)
-    bpy.utils.register_class(panel.TextureRes)
-    bpy.types.WindowManager.texture_res = PointerProperty(type=panel.TextureRes)
-    bpy.types.Scene.file_path = StringProperty \
-        (
-        name = '',
-        description = 'Select Folder',
-        default = '',
-        subtype = 'FILE_PATH'
-        )
-
-def unregister():
-    bpy.utils.unregister_class(maketextures.MakeTextures)
-    bpy.utils.unregister_class(makeplanet.MakePlanet)
-    bpy.utils.unregister_class(panel._PT_PlanetbuilderPanel)
-    bpy.utils.unregister_class(panel.Clearall)
-    bpy.utils.unregister_class(panel.TextureRes)
-    del bpy.types.WindowManager.texture_res
-    del bpy.types.Scene.file_path
-
-if __name__ == '__main__':
-    try:
-        unregister()
-    except:
-        pass
-    register()
+if __name__ == "__main__":
+    ib = ImageBuilder("C:/Users/hoske/Downloads/Mars/Bump_PBC")
