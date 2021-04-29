@@ -1,80 +1,40 @@
-import os, re, math
-import cv2, numpy as np
-import PIL.Image as Image
+from argparse import *
+import os
+import sys
+import builder
 
-class ImageBuilder():
-    def __init__(self, p):
-        self._PATH = p
-        self._RES = self.getRes()
-        self._QUADS = []
-        self.run()
+parser = ArgumentParser(description="planetbuilder is a command line script that will generate equirectangular textures from a specified space engine texture pack.")
+parser.add_argument("-s", "--source", help="Path to parent folder containing the folders: pos_x, neg_y...")
+parser.add_argument("-r", "--res", help="Resolution of the LOD. To check all possibles resolution, navigate into your textures folder and check the first character of your files. (eg. '5_0_0.png', 5). If no resolution is specified then the script will use the highest resolution avaliable.")
 
-    def run(self):
-        pattern = "(.*)_(.*)_(.*)"
-        pct = 0
+args = parser.parse_args()
 
-        for folder in os.listdir(self._PATH):
-            if os.path.isdir(os.path.join(self._PATH, folder)):
-                plate = Image.new('RGB', (self._RES * 258, self._RES * 258))
-                for file in os.listdir(os.path.join(self._PATH, folder)):
-                    filename = file[:-4]
-                    if int(re.search(pattern, filename).group(1)) == 5:
-                        tex = cv2.imread(os.path.join(self._PATH, folder, file))
-                        x = int(re.search(pattern, filename).group(2))
-                        y = int(re.search(pattern, filename).group(3))
-                        plate.paste(Image.fromarray(tex), (258 * y, 258 * x))
-
-                plate.save(f"{self._PATH}/{folder}.png", "PNG")
-                self._QUADS.append(f"{folder}.png")
-                pct += 1
-                print(f"Building Quadrants: {pct} / 6")
-        
-        cubemap = Image.new('RGB', (self._RES * 258 * 4, self._RES * 258 * 3))
-        pct = 0
-        for folder in os.listdir(self._PATH):
-            if folder in self._QUADS:
-                if folder == "pos_x.png":
-                    x = 2
-                    y = 1
-                elif folder == "neg_x.png":
-                    x = 0
-                    y = 1
-                elif folder == "pos_y.png":
-                    x = 1
-                    y = 0
-                elif folder == "neg_y.png":
-                    x = 1
-                    y = 2
-                elif folder == "pos_z.png":
-                    x = 1
-                    y = 1
-                elif folder == "neg_z.png":
-                    x = 3
-                    y = 1
-                
-                quad = cv2.imread(os.path.join(self._PATH, folder))
-                cubemap.paste(Image.fromarray(quad), (258 * self._RES * x, 258 * self._RES * y))
-                pct += 1
-                print(f"Building Cubemap: {pct} / 6")
-        
-        cubemap.save(os.path.join(self._PATH, "cubemap.png"), "PNG")
-        data =  np.array(cubemap)
-        print("Converting to Equirectangular Projection...")
-        equirect = c2e.c2e(data, self._RES * 258 * 2, self._RES * 258 *4)
-        equirect = Image.fromarray(np.uint8(equirect)).convert('RGB')
-        equirect.save(os.path.join(self._PATH, "equirect.png"), "PNG")
-        equirect.show()
-
-    def getRes(self):
-        count = 0
-        for folder in os.listdir(self._PATH):
-            if os.path.isdir(os.path.join(self._PATH, folder)):
-                for file in os.listdir(os.path.join(self._PATH, folder)):
-                    if file[0] == "5":
-                        count += 1
+if not args.source:
+    print("Error: You have not specified a source!")
+    sys.exit()
+else:
+    if not os.path.isdir(args.source):
+        print("Error: Your source needs to be a directory!")
+        sys.exit()
+    else:
+        PATH = args.source
+        RESLIST = []
+        for folder in os.listdir(PATH):
+            if os.path.isdir(os.path.join(PATH, folder)):
+                for file in os.listdir(os.path.join(PATH, folder)):
+                    if file[0] not in RESLIST:
+                        RESLIST.append(file[0])
                 break
+        
+        RESLIST.sort()
 
-        return int(math.sqrt(count))
-
-if __name__ == "__main__":
-    ib = ImageBuilder("C:/Users/hoske/Downloads/Mars-Bump-PBC-32k/textures/planets/Mars/Bump-PBC")
+        RES = RESLIST[-1]
+        if args.res:
+            if args.res not in RESLIST:
+                print(f"Error: {args.res} is not a valid resolution!")
+                sys.exit()
+            else:
+                RES = args.res
+        
+        RES = int(RES)
+        builder.ImageBuilder(PATH, RES)
