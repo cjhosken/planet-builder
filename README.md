@@ -1,16 +1,20 @@
 # Planet Builder
 
-Planet Builder is a command line script that will generate equirectangular images from a specified spaceengine texture pack.
+Planet Builder is a command line script that will generate equirectangular textures from a specified spaceengine texture pack.
 
-### Installing the addon
+### Prerequisites
 
-Planet Builder requires a few external python modules. Make sure to run
+Planet Builder requires a few external python modules.
+Make sure to run `pip install -r .\requirements.txt` before using the software.
 
-`pip install -r .\requirements.txt`
-
-before using the software.
+You will also need to install the wanted texture pack from [Solar System HD](http://spaceengine.org/download/official-addons/solar-system-hd/) or [Solar System Ultra](http://spaceengine.org/download/official-addons/solar-system-uhd/)
 
 ## Documentation
+
+Running the planet builder script is relatively easy.
+
+
+`main.py -s "C:/Users/user/Downloads/Earth"`
 
 
 
@@ -26,9 +30,3 @@ I highly encourage you to use this addon in your projects. However, I would appr
 
 * **Christopher Hosken** - *Initial work* - [Christopher-Hosken](https://github.com/Christopher-Hosken)
 
-## Acknowledgments
-
-The addon only works with textures from these two sites.
-
-* http://spaceengine.org/download/official-addons/solar-system-hd/
-* http://spaceengine.org/download/official-addons/solar-system-uhd/
