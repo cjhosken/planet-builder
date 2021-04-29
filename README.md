@@ -6,7 +6,9 @@ Planet Builder is a command line script that will generate equirectangular textu
 
 Planet Builder requires a few external python modules.
 Make sure to install the requirements before running the script.
-`$> pip install -r .\requirements.txt` 
+```python
+$> pip install -r .\requirements.txt
+``` 
 
 You will also need to install the wanted texture pack from [Solar System HD](http://spaceengine.org/download/official-addons/solar-system-hd/) or [Solar System Ultra](http://spaceengine.org/download/official-addons/solar-system-uhd/)
 
@@ -22,10 +24,14 @@ Running the planet builder script is relatively easy.
 
 ### Examples
 See a list of avaliable commands.
-```$> main.py -h```
+```python
+$> main.py -h
+```
 
 Example of using the script.
-```$> main.py -s "C:/Users/user/Downloads/Earth-Surface-PBC-128k-1/textures/planets/Earth/Surface-PBC" -r 5```
+```python
+$> main.py -s "C:/Users/user/Downloads/Earth-Surface-PBC-128k-1/textures/planets/Earth/Surface-PBC" -r 5
+```
 
 *Warning: The time it takes for the script to run is entirely dependant on the resolution (16k, 32k...). Times can vary from a couple minutes to a couple hours.*
 
