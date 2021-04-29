@@ -30,7 +30,7 @@ $> main.py -h
 
 Example of using the script.
 ```python
-$> main.py -s "C:/Users/user/Downloads/Earth-Surface-PBC-128k-1/textures/planets/Earth/Surface-PBC" -r 5
+$> main.py -r 5 -s "C:/Users/user/Downloads/Earth-Surface-PBC-128k-1/textures/planets/Earth/Surface-PBC"
 ```
 
 *Warning: The time it takes for the script to run is entirely dependant on the resolution (16k, 32k...). Times can vary from a couple minutes to a couple hours.*
