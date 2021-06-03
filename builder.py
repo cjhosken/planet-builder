@@ -62,7 +62,7 @@ class ImageBuilder():
         cubemap.save(os.path.join(self._PATH, "cubemap.png"), "PNG")
         data =  np.array(cubemap)
         print("Converting to Equirectangular Projection...")
-        equirect = c2e(data, self._RES * 258 * 2, self._RES * 258 *4)
+        equirect = c2e.c2e(data, self._RES * 258 * 2, self._RES * 258 *4)
         equirect = Image.fromarray(np.uint8(equirect)).convert('RGB')
         equirect.save(os.path.join(self._PATH, "equirect.png"), "PNG")
         equirect.show()
